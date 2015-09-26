@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+<head>
+
+  <title>iron-pages</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+  <link rel="import" href="../power-pages.html">
+
+
+  <style is="custom-style">
+    iron-selector {
+      @apply(--layout-horizontal);
+    }
+    iron-selector > div {
+      margin: 8px;
+      border: 1px solid black;
+    }
+    power-pages {
+      @apply(--layout-fit);
+    }
+
+    power-pages div:nth-child(1) {
+      background-color: var(--google-blue-500);
+    }
+
+    power-pages div:nth-child(2) {
+      background-color: var(--google-red-500);
+    }
+
+    power-pages div:nth-child(3) {
+      background-color: var(--google-green-500);
+    }
+
+  </style>
+</head>
+<body class="fullbleed">
+
+<template is="dom-bind">
+  <pre>iron-selector</pre>
+  <iron-selector selected="{{selected}}">
+    <div>one</div>
+    <div>two</div>
+    <div>three</div>
+  </iron-selector>
+  <pre>selected:<span>{{selected}}</span></pre>
+  <pre>power-pages</pre>
+  <power-pages selected="{{selected}}">
+    <template is="dom-if">
+      <div>Page One</div>
+    </template>
+    <div>Page Two</div>
+    <div>Page Three</div>
+  </power-pages>
+</template>
+
+<script>
+  // document.addEventListener('click', function(e) {
+  //   var pages = document.querySelector('power-pages');
+  //   pages.selectNext();
+  // });
+</script>
+
+</body>
+</html>

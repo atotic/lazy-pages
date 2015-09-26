@@ -1,0 +1,30 @@
+{
+  "name": "power-pages",
+  "version": "0.0.0",
+  "license": "MIT",
+  "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
+  "main": "power-pages.html",
+  "private": true,
+  "authors": [
+    "Aleks Totic <a@totic.org>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/atotic/power-pages.git"
+  },
+  "keywords": [
+    "web-components",
+    "polymer",
+    "container"
+  ],
+  "dependencies": {
+    "iron-resizable-behavior": "polymerelements/iron-resizable-behavior#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}

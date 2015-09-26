@@ -1,0 +1,173 @@
+
+
+
+<!--
+POWER pages
+you've got the power not to load every page at once!
+@demo
+-->
+
+<dom-module id="power-pages">
+  <template>
+    <style>
+
+      :host {
+        display: block;
+      }
+
+      :host > ::content > :not(.iron-selected) {
+        display: none !important;
+      }
+
+    </style>
+    <content id="content"></content>
+  </template>
+</dom-module>
+
+<script>
+'use strict';
+
+Polymer({
+
+  is: 'power-pages',
+
+  properties: {
+
+    /**
+     * value of currentlySelectedItem[attr_for_selected],
+     * or index if attr_for_selected is undefined
+     */
+    selected: {
+      type: String,
+      notify: true,
+      observer: '_selectedChanged'
+    },
+
+    attrForSelected: {
+      type: String,
+      value: null
+    }
+  },
+
+  // observers: [
+  //   '_updateSelection(selected, attrForSelected)'
+  // ],
+
+  _selectedChanged: function(selected, old) {
+    // Select a new page when selected changes
+    if (selected != null) {
+      var newPage = this._findPageBySelected(selected);
+      if (newPage) {
+        this._selectPage(newPage);
+      }
+      else {
+        console.warn('selected not found', selected);
+        this.selected = this._findCurrentSelected();
+      }
+    }
+  },
+
+  /**
+   * @return an array of selectable nodes
+   */
+  _getSelectableNodes: function() {
+    var nodes = Polymer.dom(this.$.content).getDistributedNodes();
+    // filter out all the element nodes
+    var selectableNodes = [];
+    var instances = new WeakMap();
+
+    // find all the element nodes
+    for (var i=0; i<nodes.length; i++) {
+      if (nodes[i].nodeType === 1) {
+        var el = nodes[i];
+        // keep track of template instances
+        if (el.nodeName === 'TEMPLATE') {
+          if (el._instance) {
+            instances.set(el, true);
+          }
+        }
+        selectableNodes.push(el);
+      }
+    }
+    // remove all template instances
+    for (var i=selectableNodes.length -1; i>=0; i--) {
+      if (instances.has(selectableNodes[i])) {
+        selectableNodes.splice(i--, 1);
+      }
+    }
+    return selectableNodes;
+  },
+
+  _findPageBySelected: function(selected) {
+    var selectables = this._getSelectableNodes();
+
+    if (!this.attrForSelected) {
+      return selectables[selected];
+    }
+    else {
+      for (var i=0; i<selectables.length; i++) {
+        if (selectables[i].getAttribute(this.attrForSelected) == 'selected')
+          return selectables[i];
+      }
+    }
+    return null;
+  },
+
+  _findCurrentSelected: function() {
+    var selectables = this._getSelectableNodes();
+    for (var i=0; i<selectables.length; i++) {
+      if (selectables[i].classList.contains('iron-selected'))
+        return selectables[i];
+    }
+    return null;
+  },
+
+  _selectPage: function(page) {
+    this._deselectPage(this._currentPage);
+    if (page.nodeName === 'TEMPLATE') {
+      this.listen(page, 'dom-change', '_templateRendered');
+      page.if = true;
+    }
+    else {
+      page.classList.add('iron-selected');
+    }
+    this._currentPage = page;
+  },
+
+  _getInstanceElement: function(template) {
+    if (!template || !template._instance) {
+      console.warn('template instance is null', template);
+      return null;
+    }
+    var instance = template._instance;
+    for (var i=0; i<instance._children.length; i++) {
+      if (instance._children[i].nodeType === 1)
+        return instance._children[i];
+    }
+    console.warn('template instance without element children', instance);
+  },
+
+  _templateRendered: function(ev) {
+    var t = ev.target;
+    this.unlisten(t, 'dom-change', '_templateRendered');
+    var el = this._getInstanceElement(t);
+    if (el) {
+      el.classList.add('iron-selected');
+    }
+  },
+
+  _deselectPage: function(page) {
+    if (page) {
+      if (page.nodeName === 'TEMPLATE') {
+        page.classList.remove('iron-selected');
+        page.if = false;
+      }
+      else {
+        page.classList.remove('iron-selected');
+      }
+    }
+    if (page == this._currentPage)
+      this._currentPage = null;
+  }
+});
+</script>
