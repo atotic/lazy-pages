@@ -1,5 +1,5 @@
-
-
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 
 <!--
 POWER pages
@@ -7,7 +7,7 @@ you've got the power not to load every page at once!
 @demo
 -->
 
-<dom-module id="power-pages">
+<dom-module id="lazy-pages">
   <template>
     <style>
 
@@ -29,7 +29,11 @@ you've got the power not to load every page at once!
 
 Polymer({
 
-  is: 'power-pages',
+  is: 'lazy-pages',
+
+  behaviors: [
+    Polymer.NeonAnimationRunnerBehavior
+  ],
 
   properties: {
 
@@ -46,14 +50,29 @@ Polymer({
     attrForSelected: {
       type: String,
       value: null
+    },
+
+    /**
+     * Animate first page load if true
+     */
+    animateInitialSelection: {
+      type: Boolean,
+      value: false
     }
   },
 
-  // observers: [
-  //   '_updateSelection(selected, attrForSelected)'
-  // ],
+  observers: [
+     '_updateSelection(selected, attrForSelected)'
+  ],
 
-  _selectedChanged: function(selected, old) {
+  /**
+   * Currently selected page
+   */
+  get selectedPage() {
+    return this._currentPage;
+  },
+
+  _selectedChanged: function(selected) {
     // Select a new page when selected changes
     if (selected != null) {
       var newPage = this._findPageBySelected(selected);
@@ -65,6 +84,10 @@ Polymer({
         this.selected = this._findCurrentSelected();
       }
     }
+  },
+
+  _updateSelection: function(selected, attrForSelected) {
+    this._selectedChanged(selected);
   },
 
   /**
@@ -83,13 +106,13 @@ Polymer({
         // keep track of template instances
         if (el.nodeName === 'TEMPLATE') {
           if (el._instance) {
-            instances.set(el, true);
+            instances.set(this._getInstanceElement(el), true);
           }
         }
         selectableNodes.push(el);
       }
     }
-    // remove all template instances
+    // remove all template instances, we do not consider those selectable
     for (var i=selectableNodes.length -1; i>=0; i--) {
       if (instances.has(selectableNodes[i])) {
         selectableNodes.splice(i--, 1);
@@ -123,6 +146,9 @@ Polymer({
   },
 
   _selectPage: function(page) {
+    if (page === this._currentPage)
+      return;
+    console.log("selectPage", page);
     this._deselectPage(this._currentPage);
     if (page.nodeName === 'TEMPLATE') {
       this.listen(page, 'dom-change', '_templateRendered');
@@ -140,11 +166,20 @@ Polymer({
       return null;
     }
     var instance = template._instance;
+    var el = null;
     for (var i=0; i<instance._children.length; i++) {
-      if (instance._children[i].nodeType === 1)
-        return instance._children[i];
+      if (instance._children[i].nodeType === 1) {
+        if (el != null) {
+          console.warn('dom-if children inside lazy-pages can only have a single element', template);
+        } else {
+          el = instance._children[i];
+        }
+      }
     }
-    console.warn('template instance without element children', instance);
+    if (!el) {
+      console.warn('template instance without element children', instance);
+    }
+    return el;
   },
 
   _templateRendered: function(ev) {

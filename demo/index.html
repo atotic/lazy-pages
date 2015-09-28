@@ -12,40 +12,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
 
-  <title>iron-pages</title>
+  <title>lazy-pages demo</title>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-  <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-  <link rel="import" href="../power-pages.html">
+  <link rel="import" href="../../iron-selector/iron-selector.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../lazy-pages.html">
 
 
   <style is="custom-style">
+
     iron-selector {
+      @apply(--layout);
       @apply(--layout-horizontal);
     }
+
     iron-selector > div {
       margin: 8px;
+      padding: 8px;
       border: 1px solid black;
     }
-    power-pages {
-      @apply(--layout-fit);
+
+    lazy-pages > * {
+      border: 1px solid black;
     }
 
-    power-pages div:nth-child(1) {
-      background-color: var(--google-blue-500);
-    }
-
-    power-pages div:nth-child(2) {
-      background-color: var(--google-red-500);
-    }
-
-    power-pages div:nth-child(3) {
-      background-color: var(--google-green-500);
-    }
 
   </style>
 </head>
@@ -56,17 +51,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <iron-selector selected="{{selected}}">
     <div>one</div>
     <div>two</div>
-    <div>three</div>
+    <div>three</div>    <div>four</div>    <div>five</div>
   </iron-selector>
   <pre>selected:<span>{{selected}}</span></pre>
   <pre>power-pages</pre>
-  <power-pages selected="{{selected}}">
+  <lazy-pages selected="{{selected}}">
     <template is="dom-if">
-      <div>Page One</div>
+      <div>
+        Page One is inside a dom-if
+      </div>
     </template>
-    <div>Page Two</div>
-    <div>Page Three</div>
-  </power-pages>
+    <section>Page Two is just a page</section>
+    <template is="dom-if" restamp>
+      <section>
+        <link rel="import" href="../../paper-button/paper-button.html">
+        Page Three with lazily loaded paper button
+        <paper-button raised>I am that lazy button</paper-button>
+      </section>
+    </template>
+    <section>Page Four</section>
+    <template is="dom-if" restamp>
+      <section>
+        <link rel="import" href="../../iron-icons/iron-icons.html">
+        <link rel="import" href="../../iron-icons/maps-icons.html">
+        Page Five with a lazily loaded icon <iron-icon icon="maps:hotel"></iron-icon>
+        The icon does not work first time it is shown. My guess is that's because iron-icon prototype gets upgraded before maps-icons are loaded
+      </section>
+    </template>
+  </lazy-pages>
 </template>
 
 <script>

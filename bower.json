@@ -1,16 +1,16 @@
 {
-  "name": "power-pages",
+  "name": "lazy-pages",
   "version": "0.0.0",
   "license": "MIT",
   "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
-  "main": "power-pages.html",
+  "main": "lazy-pages.html",
   "private": true,
   "authors": [
     "Aleks Totic <a@totic.org>"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/atotic/power-pages.git"
+    "url": "git://github.com/atotic/lazy-pages.git"
   },
   "keywords": [
     "web-components",
@@ -18,7 +18,8 @@
     "container"
   ],
   "dependencies": {
-    "iron-resizable-behavior": "polymerelements/iron-resizable-behavior#^1.0.0",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^1.0.0",
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {

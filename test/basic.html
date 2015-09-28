@@ -21,77 +21,89 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
 
     <link rel="import" href="../../test-fixture/test-fixture.html">
-    <link rel="import" href="../power-pages.html">
+    <link rel="import" href="../lazy-pages.html">
 
   </head>
   <body>
 
     <test-fixture id="basic">
       <template>
-        <iron-pages>
-          <div id="page0">Page 0</div>
+        <lazy-pages>
+          <template is="dom-if">
+            <div id="page0">Page 0</div>
+          </template>
           <div id="page1">Page 1</div>
           <div id="page2">Page 2</div>
           <div id="page3">Page 3</div>
-        </iron-pages>
+        </lazy-pages>
       </template>
     </test-fixture>
 
+    <test-fixture id="attrForSelected">
+      <template>
+        <lazy-pages>
+          <template is="dom-if" restamp >
+            <div id="page0">Page 0</div>
+          </template>
+          <div id="page1">Page 1</div>
+          <div id="page2">Page 2</div>
+          <div id="page3">Page 3</div>
+        </lazy-pages>
+      </template>
+    </test-fixture>
     <script>
 
       suite('basic', function() {
         var pages;
 
-        suite('defaults', function() {
+        suite('lazy-pages', function() {
+
           setup(function () {
             pages = fixture('basic');
           });
 
-          test('to nothing selected', function() {
+          test('defaults to nothing selected', function() {
             assert.equal(pages.selected, undefined);
           });
 
-          test('null activateEvent', function() {
-            // `activateEvent` is not a useful feature for iron-pages and it can interfere
-            // with ux; ensure iron-pages has cleared any default `activateEvent`
-            assert.equal(pages.activateEvent, null);
-          });
-
-          test('to iron-selected as selectedClass', function() {
-            assert.equal(pages.selectedClass, 'iron-selected');
-          });
-
-          test('as many items as children', function() {
-            assert.equal(pages.items.length, 4);
-          });
-
           test('all pages are display:none', function() {
-            pages.items.forEach(function(p) {
-              assert.equal(getComputedStyle(p).display, 'none');
-            });
+            for (var i=0; i<pages.children.length; i++) {
+              assert.equal(getComputedStyle(pages.children[i]).display, 'none');
+            }
           });
-        });
 
-        suite('set the selected attribute', function() {
-          setup(function () {
-            pages = fixture('basic');
+          test('dom-if template appears', function() {
             pages.selected = 0;
+            Polymer.dom.flush();
+            assert.ok(pages.querySelector('#page0'));
+            assert.equal(pages.children.length, 5);
+            pages.selected = 1;
+            Polymer.dom.flush();
+            assert.equal(pages.children.length, 4);
           });
 
-          test('selected value', function() {
-            assert.equal(pages.selected, '0');
-          });
-
-          test('selected item', function() {
-            assert.equal(pages.selectedItem, pages.items[0]);
-          });
-
-          test('selected item is display:block and all others are display:none', function() {
-            pages.items.forEach(function(p) {
-              assert.equal(getComputedStyle(p).display, p == pages.selectedItem ? 'block' : 'none');
-            });
-          });
         });
+
+        // suite('set the selected attribute', function() {
+        //   setup(function () {
+        //     pages = fixture('basic');
+        //     pages.selected = 0;
+        //   });
+
+        //   test('selected value', function() {
+        //     assert.equal(pages.selected, '0');
+        //   });
+
+        //   test('selected item', function() {
+        //     assert.equal(pages.selectedItem, pages.items[0]);
+        //   });
+
+        //   test('selected item is display:block and all others are display:none', function() {
+        //     pages.items.forEach(function(p) {
+        //       assert.equal(getComputedStyle(p).display, p == pages.selectedItem ? 'block' : 'none');
+        //     });
+        //   });
+        // });
 
       });
 
