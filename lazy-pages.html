@@ -1,9 +1,13 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
-
+<link rel="import" href="../neon-animation/animations/opaque-animation.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <!--
-POWER pages
-you've got the power not to load every page at once!
+lazy-pages
+
+load the pages right away,
+or load them lazy.
+
 @demo
 -->
 
@@ -13,10 +17,24 @@ you've got the power not to load every page at once!
 
       :host {
         display: block;
+        position: relative;
       }
 
-      :host > ::content > :not(.iron-selected) {
+      :host > ::content > * {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        height: 100%;
+      }
+
+      :host > ::content > :not(.iron-selected):not(.neon-animating) {
         display: none !important;
+      }
+
+      :host > ::content > .neon-animating {
+        pointer-events: none;
       }
 
     </style>
@@ -25,6 +43,131 @@ you've got the power not to load every page at once!
 </dom-module>
 
 <script>
+
+(function() {
+
+/**
+ * Helper class for 'lazy-pages'
+ * Animation transition state machine
+ * Cancel by calling stop
+ */
+var LazyTransition = function(lazy) {
+  this.lazy = lazy;
+  this._boundDomChange = this.handleDomChange.bind(this);
+};
+
+LazyTransition.prototype = {
+
+  /**
+   * @param {Node} entryPage -- node we are transitioning to
+   * @param {Node} exitPage -- node we are leaving
+   */
+  start: function(entryPage, exitPage) {
+    this.entryPage = this.entryInstance = entryPage;
+    this.exitPage = this.exitInstance = exitPage;
+    if (this.isTemplate(this.exitPage)) {
+      this.exitInstance = this.lazy._getInstanceElement(this.exitPage);
+    };
+
+    // add class to exitInstance to prevent display:none)
+    if (this.exitInstance) {
+      Polymer.dom(this.exitInstance).classList.add('neon-animating');
+      Polymer.dom(this.exitInstance).classList.remove('iron-selected');
+    }
+
+    // start entryPage activation
+    this.lazy._currentPage = this.entryPage;
+    if (this.isTemplate(this.entryPage)) {
+      this.entryPage.addEventListener('dom-change', this._boundDomChange);
+      if (this.entryPage.if)
+        console.warn('transitioning to already showing template');
+      this.entryPage.if = true; // generate the dom
+    }
+    else {
+      this.entryInstance = this.lazy._getInstanceElement(this.entryPage);
+      this.startAnimation();
+    }
+
+  },
+
+  /**
+   * Aborts transition
+   */
+  stop: function() {
+    this.cleanup();
+  },
+
+  handleDomChange: function(ev) {
+    if (this.done)
+      return;
+    this.entryPage.removeEventListener('dom-change', this._boundDomChange);
+    this.entryInstance = this.lazy._getInstanceElement(this.entryPage);
+    if (!this.entryInstance) {
+      console.error('template missing an instance', this.entryPage);
+    }
+    this.startAnimation();
+  },
+
+  startAnimation: function() {
+    if (this.done)
+      return;
+
+    // make entry page visible
+    if (this.entryInstance)
+      this.entryInstance.classList.add('iron-selected');
+
+    var animations = this.lazy._getAnimations(this.entryPage, this.exitPage);
+    var config = [];
+    if (animations.entry) {
+      config.push({
+        name: 'opaque-animation',
+        node: this.entryInstance
+      });
+      config.push( animations.entry);
+    }
+    if (animations.exit)
+      config.push( animations.exit);
+
+    if (config.length > 0) {
+      this.lazy.animationConfig = config;
+      this._boundAnimationFinish = this.animationFinish.bind(this);
+      this.lazy.addEventListener('neon-animation-finish', this._boundAnimationFinish);
+      this.lazy.playAnimation(null, this);
+    }
+    else {
+      this.cleanup();
+    }
+  },
+
+  animationFinish: function(ev) {
+    // console.log('animation finish');
+    if (ev.detail != this) // ignore animations that have not been started by us
+      return;
+    this.cleanup();
+  },
+
+  cleanup: function() {
+    this.done = true;
+
+    if (this._boundAnimationFinish) {
+      this.lazy.removeEventListener('neon-animation-finish', this._boundAnimationFinish);
+      delete this._boundAnimationFinish;
+    }
+    if (this.exitInstance) {
+      if (this.isTemplate(this.exitPage))
+        this.exitPage.if = false;
+      Polymer.dom(this.exitInstance).classList.remove('neon-animating');
+    }
+    if (this.lazy._lazyTransition === this)
+      this.lazy._lazyTransition = null;
+  },
+
+  isTemplate: function(node) {
+    return node && node.nodeName === 'TEMPLATE';
+  }
+
+};
+
 'use strict';
 
 Polymer({
@@ -32,7 +175,8 @@ Polymer({
   is: 'lazy-pages',
 
   behaviors: [
-    Polymer.NeonAnimationRunnerBehavior
+    Polymer.NeonAnimationRunnerBehavior,
+    Polymer.IronResizableBehavior
   ],
 
   properties: {
@@ -58,7 +202,16 @@ Polymer({
     animateInitialSelection: {
       type: Boolean,
       value: false
-    }
+    },
+
+    /**
+     * Use it to specify transition animations dynamically
+     *
+     * @type Function(entryPage, exitPage, entryInstance, exitInstance)
+     */
+     animationOracle: {
+      type: Function
+     }
   },
 
   observers: [
@@ -145,23 +298,90 @@ Polymer({
     return null;
   },
 
+  /**
+   * animation names must be defined in animationConfig
+   * @return {entry: animationConfig, exit: animationConfig}
+   */
+  _getAnimations: function(entryPage, exitPage ) {
+
+    if (!exitPage && !this.animateInitialSelection) {
+      return {};
+    }
+    var entryInstance = entryPage ? this._getInstanceElement(entryPage) : null;
+    var exitInstance = exitPage ? this._getInstanceElement(exitPage) : null;
+    var animation;
+
+    if (this.animationOracle) {
+      animation = this.animationOracle(entryPage, exitPage, entryInstance, exitInstance);
+      if (animation)
+        return animation;
+    }
+
+    animation = {};
+
+    if (entryInstance) {
+      if (this.entryAnimation) {
+        animation.entry = {
+          name: this.entryAnimation,
+          node: entryInstance
+        };
+      }
+      else {
+        if (entryInstance.getAnimationConfig) {
+          animation.entry = {
+            animatable: entryInstance,
+            type: 'entry'
+          }
+        }
+      }
+    }
+
+    if (exitInstance) {
+      if (this.exitAnimation) {
+        animation.exit = {
+          name: this.exitAnimation,
+          node: exitInstance
+        }
+      }
+      else {
+        if (exitInstance.getAnimationConfig) {
+          animation.exit = {
+            animatable: this.exitInstance,
+            type: 'exit'
+          }
+        }
+      }
+    }
+
+    return animation;
+  },
+
   _selectPage: function(page) {
     if (page === this._currentPage)
       return;
-    console.log("selectPage", page);
-    this._deselectPage(this._currentPage);
-    if (page.nodeName === 'TEMPLATE') {
-      this.listen(page, 'dom-change', '_templateRendered');
-      page.if = true;
+
+    if (this._lazyTransition) {
+      console.log('canceling transition');
+      this._lazyTransition.stop();
     }
-    else {
-      page.classList.add('iron-selected');
-    }
-    this._currentPage = page;
+    this._lazyTransition = new LazyTransition(this);
+    this._lazyTransition.start(page, this._currentPage);
   },
 
+  /**
+   * @param {Node} template -- dom-if template.
+   * @return {Node} instance belonging to template
+   */
   _getInstanceElement: function(template) {
-    if (!template || !template._instance) {
+    if (!template) {
+      console.warn('template is null', template);
+      return null;
+    }
+
+    if (template.nodeName !== 'TEMPLATE') // this is not a template, so it is also an instance
+      return template;
+
+    if (!template._instance) {
       console.warn('template instance is null', template);
       return null;
     }
@@ -182,27 +402,7 @@ Polymer({
     return el;
   },
 
-  _templateRendered: function(ev) {
-    var t = ev.target;
-    this.unlisten(t, 'dom-change', '_templateRendered');
-    var el = this._getInstanceElement(t);
-    if (el) {
-      el.classList.add('iron-selected');
-    }
-  },
-
-  _deselectPage: function(page) {
-    if (page) {
-      if (page.nodeName === 'TEMPLATE') {
-        page.classList.remove('iron-selected');
-        page.if = false;
-      }
-      else {
-        page.classList.remove('iron-selected');
-      }
-    }
-    if (page == this._currentPage)
-      this._currentPage = null;
-  }
 });
+
+})();
 </script>
