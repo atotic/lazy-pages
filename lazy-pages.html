@@ -69,7 +69,6 @@ LazyTransition.prototype = {
       this.exitInstance = this.lazy._getInstanceElement(this.exitPage);
     };
 
-    this.lazy.cancelAnimation();
     // add class to exitInstance to prevent display:none)
     if (this.exitInstance) {
       Polymer.dom(this.exitInstance).classList.add('neon-animating');
@@ -95,6 +94,20 @@ LazyTransition.prototype = {
    * Aborts transition
    */
   stop: function() {
+    if (this.done)
+      return;
+
+    if (this._boundAnimationFinish) {
+      // debugger;
+      // Because current webanimations do not call finish on cancel
+      // https://github.com/PolymerElements/neon-animation/issues/81
+      if (this.lazy._player && this.lazy._player.onfinish) {
+        var f = this.lazy._player.onfinish;
+        this.lazy._player.onfinish = function() {};
+        f.apply(this.lazy._player);
+      }
+      this.lazy.cancelAnimation();
+    }
     this.cleanup();
   },
 
@@ -115,7 +128,7 @@ LazyTransition.prototype = {
 
     // make entry page visible
     if (this.entryInstance)
-      this.entryInstance.classList.add('iron-selected');
+      Polymer.dom(this.entryInstance).classList.add('iron-selected');
 
     var animations = this.lazy._getAnimations(this.entryPage, this.exitPage);
     var config = [];
@@ -148,6 +161,8 @@ LazyTransition.prototype = {
   },
 
   cleanup: function() {
+    if (this.done)
+      return;
     this.done = true;
 
     if (this._boundAnimationFinish) {
@@ -216,7 +231,7 @@ Polymer({
   },
 
   observers: [
-     '_updateSelection(selected, attrForSelected)'
+     // '_updateSelection(selected, attrForSelected)'
   ],
 
   /**
@@ -226,9 +241,10 @@ Polymer({
     return this._currentPage;
   },
 
-  _selectedChanged: function(selected) {
+  _selectedChanged: function(selected, old) {
     // Select a new page when selected changes
     if (selected != null) {
+      // console.log('selected', selected);
       var newPage = this._findPageBySelected(selected);
       if (newPage) {
         this._selectPage(newPage);
@@ -240,9 +256,9 @@ Polymer({
     }
   },
 
-  _updateSelection: function(selected, attrForSelected) {
-    this._selectedChanged(selected);
-  },
+  // _updateSelection: function(selected, attrForSelected) {
+  //   this._selectedChanged(selected);
+  // },
 
   /**
    * @return an array of selectable nodes
@@ -255,7 +271,7 @@ Polymer({
 
     // find all the element nodes
     for (var i=0; i<nodes.length; i++) {
-      if (nodes[i].nodeType === 1) {
+      if (nodes[i].nodeType === 1 && nodes[i].nodeName != 'LINK') {
         var el = nodes[i];
         // keep track of template instances
         if (el.nodeName === 'TEMPLATE') {
@@ -293,7 +309,7 @@ Polymer({
   _findCurrentSelected: function() {
     var selectables = this._getSelectableNodes();
     for (var i=0; i<selectables.length; i++) {
-      if (selectables[i].classList.contains('iron-selected'))
+      if (Polymer.dom(selectables[i]).classList.contains('iron-selected'))
         return selectables[i];
     }
     return null;
@@ -347,7 +363,7 @@ Polymer({
       else {
         if (exitInstance.getAnimationConfig) {
           animation.exit = {
-            animatable: this.exitInstance,
+            animatable: exitInstance,
             type: 'exit'
           }
         }
@@ -362,11 +378,13 @@ Polymer({
       return;
 
     if (this._lazyTransition) {
-      console.log('canceling transition');
+      // console.log('canceling transition', this._lazyTransition);
       this._lazyTransition.stop();
     }
-    this._lazyTransition = new LazyTransition(this);
-    this._lazyTransition.start(page, this._currentPage);
+    // else {
+      this._lazyTransition = new LazyTransition(this);
+      this._lazyTransition.start(page, this._currentPage);
+    // }
   },
 
   /**
@@ -389,7 +407,7 @@ Polymer({
     var instance = template._instance;
     var el = null;
     for (var i=0; i<instance._children.length; i++) {
-      if (instance._children[i].nodeType === 1) {
+      if (instance._children[i].nodeType === 1 && instance._children[i].nodeName !== 'LINK') {
         if (el != null) {
           console.warn('dom-if children inside lazy-pages can only have a single element', template);
         } else {

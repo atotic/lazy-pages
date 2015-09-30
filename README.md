@@ -1,69 +1,67 @@
-# power-page
-Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if
+## lazy-pages
 
-Functionality:
+Status: initial alpha release
 
-Next:
-- test lazy loading. Get those <link rel="import" in the demo>
-- animation transitions
+### lazy-pages, when you do not want all your pages to get out of bed at once
 
-Stage 1: if loading
-- pages that are dom-if templates instatiated by setting if
-- can mix dom-if and plain elements
-- support restamp on dom-if
+Instead of
+```
+<neon-animated-pages selected="{{selected}}">
+  <landing-page></landing-page>
+  <demo-page></demo-page>
+  <contact-page></contact-page>
+</neon-animated-pages>
+```
 
-Stage 2: animation
-- configure animation with an array
-- animate transitions
+loading everything on load, you can now delay the loading like this:
 
-DONE:
-- pages that are dom-if templates instatiated by setting if
-- can mix dom-if and plain elements
-- support restamp on dom-if
+```
+<lazy-pages>
+  <!-- very-important-page is not loaded lazily -->
+  <very-important-page></very-important-page>
 
-ARCHITECTURE:
-NeonAnimationRunnerBehavior
-  has animationConfig to specify animations
-  animationConfig also specifies node to animate, but we want node to be dynamic
-  solution:
+  <template is="dom-if">
+    <!-- landing-page is displayed lazily, stays in dom once shown -->
+    <landing-page></landing-page>
+  </template>
 
-IronSelectableBehavior:
-- selects element out of items. We can't do that, since our items are in flux
+  <template is="dom-if" restamp>
+    <!-- demo-page is displayed lazily, and removed from dom when invisible -->
+    <demo-page></demo-page>
+  </template>
 
-swithPages algorithm
+  <template is="dom-if">
+    <!-- super-complex-page element definition is also loaded lazily -->
+    <link rel="import" href="super-complex-page.html">
+    <super-complex-page></super-complex-page>
+  </template>
+</lazy-pages>
 
-switchPages:
+```
+
+### Why?
+- memory: you have lots of pages, and do not want to load them all at once on startup
+- speed: you do not want to load all your element definitions on startup
+- attached callbacks: you do not want all your attached callbacks to run on an initial load
+
+### Usage
+
+`lazy-pages` will render just like `neon-animated-pages`. You can also use them as `iron-pages` replacement.
+
+Put any template you'd like to load lazily inside a `dom-if` template:
+
+```
+<template is="dom-if">
+  <my-page></my-page>
+</template>
+```
+
+You can only have a single top-level tag inside a template (except for link tags). This keeps my code simple.
+
+To load element definition lazily, put the link tag inside the template.
+
+To remove element from dom when invisible, use `restamp` dom-if option.
+
+`lazy-pages` has basic attribute compatibility with neon-animated-pages: `selected`, `attrForSelected`, `animateInitialSelection`.
 
 
-
-  var exitPage, entryPage;
-  var entryPage = page;
-
-  this._currentPage = entryPage;
-
-// does template need iron-selected? No.
-
-// cancel existing animations
-
-// prepare exitInstance
-  exitInstance.addClass('neon-animating'); // to prevent it from display:none
-  exitInstance.removeClass('iron-selected');
-
-// prepare entryInstance
-// animation starts when entryPage instance is visible
-// if exitPage instance is not visible, do we care?
-
-  async createEntryInstance -- listen to template.dom-change
-
-  entryInstance.addClass('iron-selected')
-
-  async animateExitInstance
-    if (exitInstance && exitAnimation)
-      addAnimationTo animationConfig
-    if (entryInstance && entryAnimation)
-      addAnimationTo animationConfig
-
-  async playAnimation( fromPage: toPage )
-
-  transitionComplete();
-  notifyPageResize

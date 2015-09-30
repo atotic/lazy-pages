@@ -1,6 +1,6 @@
 {
   "name": "lazy-pages",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
   "main": "lazy-pages.html",
