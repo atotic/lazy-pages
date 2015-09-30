@@ -426,9 +426,10 @@ Polymer({
   _notifyPageResize: function() {
     if (this._currentPage) {
       var instance = this._getInstanceElement(this._currentPage);
-      this.resizerShouldNotify = function(el) {
-        return el === instance;
-      }
+      // should traverse hierarchy, really
+      // this.resizerShouldNotify = function(el) {
+      //   return el === instance;
+      // }
       this.notifyResize();
     }
   }

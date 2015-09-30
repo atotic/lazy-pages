@@ -1,6 +1,6 @@
 {
   "name": "lazy-pages",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
   "main": "lazy-pages.html",
@@ -28,6 +28,7 @@
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
     "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "google-map": "^1.1.2"
   }
 }

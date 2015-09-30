@@ -64,6 +64,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         background: var(--paper-purple-500);
       }
 
+      google-map {
+        width: 256px;
+        height: 256px;
+      }
+
     </style>
 
   </head>
@@ -90,8 +95,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <template id="03" is="dom-if" restamp>
         <neon-animatable id="n3">3</neon-animatable>
         </template>
-        <template id="04" is="dom-if" restamp>
-        <neon-animatable id="n4">4</neon-animatable>
+        <template id="04" is="dom-if">
+          <link rel="import" href="../../../google-map/google-map.html">
+        <neon-animatable id="n4">
+          4
+          <google-map latitude="37.779" longitude="-122.3892" min-zoom="9" max-zoom="11" language="en"></google-map>
+
+        </neon-animatable>
         </template>
       </lazy-pages>
 
