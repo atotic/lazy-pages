@@ -69,6 +69,7 @@ LazyTransition.prototype = {
       this.exitInstance = this.lazy._getInstanceElement(this.exitPage);
     };
 
+    this.lazy.cancelAnimation();
     // add class to exitInstance to prevent display:none)
     if (this.exitInstance) {
       Polymer.dom(this.exitInstance).classList.add('neon-animating');
