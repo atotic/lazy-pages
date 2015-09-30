@@ -1,10 +1,9 @@
 {
   "name": "lazy-pages",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
   "main": "lazy-pages.html",
-  "private": true,
   "authors": [
     "Aleks Totic <a@totic.org>"
   ],
@@ -16,6 +15,9 @@
     "web-components",
     "polymer",
     "container"
+  ],
+  "ignore": [
+    "test"
   ],
   "dependencies": {
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
