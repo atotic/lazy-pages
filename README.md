@@ -1,8 +1,7 @@
-## lazy-pages
+# lazy-pages
+##### when you do not want all your pages to get out of bed at once
 
 Status: initial alpha release
-
-### lazy-pages, when you do not want all your pages to get out of bed at once
 
 Instead of
 ```
