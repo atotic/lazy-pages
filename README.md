@@ -3,18 +3,16 @@
 
 Status: initial alpha release
 
-Instead of
-```
+Instead of your app
+```html
 <neon-animated-pages selected="{{selected}}">
   <landing-page></landing-page>
   <demo-page></demo-page>
   <contact-page></contact-page>
 </neon-animated-pages>
 ```
-
-loading everything on load, you can now delay the loading like this:
-
-```
+loading every page into DOM on startup, use `lazy-pages` to load them on demand:
+```html
 <lazy-pages>
   <!-- very-important-page is not loaded lazily -->
   <very-important-page></very-important-page>
@@ -49,7 +47,7 @@ loading everything on load, you can now delay the loading like this:
 
 Put any template you'd like to load lazily inside a `dom-if` template:
 
-```
+```html
 <template is="dom-if">
   <my-page></my-page>
 </template>
