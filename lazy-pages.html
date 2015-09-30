@@ -176,6 +176,8 @@ LazyTransition.prototype = {
     }
     if (this.lazy._lazyTransition === this)
       this.lazy._lazyTransition = null;
+
+    this.lazy._notifyPageResize();
   },
 
   isTemplate: function(node) {
@@ -420,6 +422,16 @@ Polymer({
     }
     return el;
   },
+
+  _notifyPageResize: function() {
+    if (this._currentPage) {
+      var instance = this._getInstanceElement(this._currentPage);
+      this.resizerShouldNotify = function(el) {
+        return el === instance;
+      }
+      this.notifyResize();
+    }
+  }
 
 });
 
