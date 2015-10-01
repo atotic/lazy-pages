@@ -2,7 +2,7 @@
   "name": "lazy-pages",
   "version": "0.8.0",
   "license": "MIT",
-  "description": "Lazily instatiated Polymer pages: iron-page + neon-animated-pages + dom-if",
+  "description": "Lazy display/loading of Polymer pages: iron/neon-page compatible",
   "main": "lazy-pages.html",
   "authors": [
     "Aleks Totic <a@totic.org>"
