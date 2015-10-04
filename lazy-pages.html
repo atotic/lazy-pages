@@ -10,6 +10,7 @@
       :host {
         display: block;
         position: relative;
+        overflow: hidden; /* because http://stackoverflow.com/questions/32639639/ios-9-mobile-safari-has-a-blinking-bug-with-transform-scale3d-and-translate3d */
       }
 
       :host > ::content > * {

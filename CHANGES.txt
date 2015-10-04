@@ -1,0 +1,5 @@
+CHANGES.txt
+
+0.8.2
+- fix for http://stackoverflow.com/questions/32639639/ios-9-mobile-safari-has-a-blinking-bug-with-transform-scale3d-and-translate3d
+  ios animation janky
