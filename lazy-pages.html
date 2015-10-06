@@ -324,8 +324,10 @@ Polymer({
         else {
           newPage = this._findPageBySelected(this.rescueSelection);
           if (newPage) {
-            this.selected = this._pageToSelected(newPage);
-          }
+            // debounce to prevent infinite loops, should not happen, but it does
+            this.debounce('setselected', function() {
+              this.selected = this._pageToSelected(newPage);
+            }.bind(this));          }
           else {
             console.error('rescueSelection page not found');
           }

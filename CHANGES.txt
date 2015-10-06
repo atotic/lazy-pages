@@ -1,3 +1,7 @@
+0.8.4
+==============
+- debounce rescueSelection to prevent infinite loops
+
 0.8.3
 ==============
 - bugfix: attrForSelected was not working
