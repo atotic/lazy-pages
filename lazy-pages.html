@@ -69,7 +69,7 @@ LazyTransition.prototype = {
     }
 
     // start entryPage activation
-    this.lazy._currentPage = this.entryPage;
+    this.lazy._setSelectedItem(this.entryPage);
     if (this.isTemplate(this.entryPage)) {
       this.entryPage.addEventListener('dom-change', this._boundDomChange);
       if (this.entryPage.if)
@@ -274,6 +274,15 @@ Polymer({
     },
 
     /**
+     * Currently selected item
+     */
+    selectedItem: {
+      type: Object,
+      readOnly: true,
+      notify: true
+    },
+
+    /**
      * Animate first page load if true
      */
     animateInitialSelection: {
@@ -287,16 +296,16 @@ Polymer({
      *
      * Function(entryPage, exitPage, entryInstance, exitInstance)
      */
-     animationOracle: {
+    animationOracle: {
       type: Function
-     }
-  },
+     },
 
-  /**
-   * @return {Node} Currently selected page
-   */
-  get selectedPage() {
-    return this._currentPage;
+     /**
+      * rescueSelection will be set if selection gets set to an invalid value
+      */
+    rescueSelection: {
+      type: String
+    }
   },
 
   _selectedChanged: function(selected, old) {
@@ -308,16 +317,36 @@ Polymer({
         this._selectPage(newPage);
       }
       else {
-        console.warn('selected not found', selected);
-        this.selected = this._findCurrentSelected();
+        // selection is bad, start the recovery
+        if (this.rescueSelection === undefined) {
+          console.warn('you should set rescueSelection attribute on lazy-pages to guard against bad selection', selected);
+        }
+        else {
+          newPage = this._findPageBySelected(this.rescueSelection);
+          if (newPage) {
+            this.selected = this._pageToSelected(newPage);
+          }
+          else {
+            console.error('rescueSelection page not found');
+          }
+        }
       }
     }
   },
 
+  _pageToSelected: function(page) {
+    if (this.attrForSelected) {
+      return page.getAttribute(this.attrForSelected);
+    }
+    else {
+      return this.items().indexOf(page);
+    }
+  },
+
   /**
-   * @return an array of selectable nodes
+   * @return an array of selectable items
    */
-  _getSelectableNodes: function() {
+  items: function() {
     var nodes = Polymer.dom(this.$.content).getDistributedNodes();
     // filter out all the element nodes
     var selectableNodes = [];
@@ -346,14 +375,14 @@ Polymer({
   },
 
   _findPageBySelected: function(selected) {
-    var selectables = this._getSelectableNodes();
+    var selectables = this.items();
 
     if (!this.attrForSelected) {
       return selectables[selected];
     }
     else {
       for (var i=0; i<selectables.length; i++) {
-        if (selectables[i].getAttribute(this.attrForSelected) == 'selected')
+        if (selectables[i].getAttribute(this.attrForSelected) == selected)
           return selectables[i];
       }
     }
@@ -361,7 +390,7 @@ Polymer({
   },
 
   _findCurrentSelected: function() {
-    var selectables = this._getSelectableNodes();
+    var selectables = this.items();
     for (var i=0; i<selectables.length; i++) {
       if (Polymer.dom(selectables[i]).classList.contains('iron-selected'))
         return selectables[i];
@@ -428,7 +457,7 @@ Polymer({
   },
 
   _selectPage: function(page) {
-    if (page === this._currentPage)
+    if (page === this.selectedItem)
       return;
 
     if (this._lazyTransition) {
@@ -436,7 +465,7 @@ Polymer({
       this._lazyTransition.stop();
     }
     this._lazyTransition = new LazyTransition(this);
-    this._lazyTransition.start(page, this._currentPage);
+    this._lazyTransition.start(page, this.selectedItem);
   },
 
   /**
@@ -474,8 +503,8 @@ Polymer({
   },
 
   _notifyPageResize: function() {
-    if (this._currentPage) {
-      var instance = this._getInstanceElement(this._currentPage);
+    if (this.selectedItem) {
+      var instance = this._getInstanceElement(this.selectedItem);
       // should traverse hierarchy, really
       // this.resizerShouldNotify = function(el) {
       //   return el === instance;

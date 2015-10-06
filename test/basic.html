@@ -41,16 +41,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="attrForSelected">
       <template>
-        <lazy-pages>
-          <template is="dom-if" restamp>
-            <div id="page0">Page 0</div>
-          </template>
-          <div id="page1">Page 1</div>
-          <div id="page2">Page 2</div>
-          <div id="page3">Page 3</div>
+        <lazy-pages attr-for-selected="name" rescue-selection="page3">
+          <div name="page0">Page0</div>
+          <div name="page1">Page1</div>
+          <div name="page2">Page2</div>
+          <div name="page3">Page3</div>
         </lazy-pages>
       </template>
     </test-fixture>
+
     <script>
 
       suite('basic', function() {
@@ -80,6 +79,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             pages.selected = 1;
             Polymer.dom.flush();
             // assert.equal(pages.children.length, 4); yeah, need to flush template debouncer for this to work
+          });
+
+          test('attrForSelected', function() {
+            pages = fixture('attrForSelected');
+            pages.selected = "page1";
+            assert.equal(pages.selectedItem.getAttribute('name'), 'page1');
+            pages.selected = 'badSelector';
+            // bad selection was rescued
+            assert.equal(pages.selectedItem.getAttribute('name'), 'page3');
           });
 
         });

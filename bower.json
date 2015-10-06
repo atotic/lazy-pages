@@ -1,6 +1,6 @@
 {
   "name": "lazy-pages",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "license": "MIT",
   "description": "Lazy display/loading of Polymer pages: iron/neon-page compatible",
   "main": "lazy-pages.html",
