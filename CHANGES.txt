@@ -1,6 +1,7 @@
 0.8.4
 ==============
 - debounce rescueSelection to prevent infinite loops
+- timeout transition.startAnimation from dom-change, makes animations better for lazily loaded
 
 0.8.3
 ==============
