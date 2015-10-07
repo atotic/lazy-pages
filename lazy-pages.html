@@ -112,7 +112,11 @@ LazyTransition.prototype = {
     if (!this.entryInstance) {
       console.error('template missing an instance', this.entryPage);
     }
-    this.startAnimation();
+    window.setTimeout(function() {
+      // dom-change gets fired before element is inserted into DOM
+      // Timeout to let element get inserted before animation
+      this.startAnimation();
+    }.bind(this),0);
   },
 
   startAnimation: function() {

@@ -81,13 +81,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // assert.equal(pages.children.length, 4); yeah, need to flush template debouncer for this to work
           });
 
-          test('attrForSelected', function() {
+          test('attrForSelected', function(done) {
             pages = fixture('attrForSelected');
             pages.selected = "page1";
             assert.equal(pages.selectedItem.getAttribute('name'), 'page1');
             pages.selected = 'badSelector';
+            window.setTimeout(function() {
+              // async because selection gets reset asynchronously
+              assert.equal(pages.selectedItem.getAttribute('name'), 'page3');
+              done();
+            });
             // bad selection was rescued
-            assert.equal(pages.selectedItem.getAttribute('name'), 'page3');
           });
 
         });
