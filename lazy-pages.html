@@ -38,6 +38,7 @@
 <script>
 
 (function() {
+'use strict';
 
 /**
  * Helper class for 'lazy-pages'
@@ -54,10 +55,12 @@ LazyTransition.prototype = {
   /**
    * @param {Node} entryPage -- node we are transitioning to
    * @param {Node} exitPage -- node we are leaving
+   * @param {*} entrySelected -- selected index for the entry node
    */
-  start: function(entryPage, exitPage) {
+  start: function(entryPage, exitPage, entrySelected) {
     this.entryPage = this.entryInstance = entryPage;
     this.exitPage = this.exitInstance = exitPage;
+    this.entrySelected = entrySelected;
     if (this.isTemplate(this.exitPage)) {
       this.exitInstance = this.lazy._getInstanceElement(this.exitPage);
     };
@@ -124,9 +127,13 @@ LazyTransition.prototype = {
       return;
 
     // make entry page visible
-    if (this.entryInstance)
+    if (this.entryInstance) {
+      this.lazy.fire('lazy-pages-transition-ready', {
+        page: this.entryInstance,
+        selected: this.entrySelected
+      });
       Polymer.dom(this.entryInstance).classList.add('iron-selected');
-
+    }
     var animations = this.lazy._getAnimations(this.entryPage, this.exitPage);
     var config = [];
     if (animations.entry) {
@@ -246,6 +253,8 @@ LazyTransition.prototype = {
 
   `lazy-pages` has basic attribute compatibility with neon-animated-pages: `selected`, `attrForSelected`, `animateInitialSelection`.
 
+  ### Tips
+  - Use `lazy-pages-transition-ready` event if you need to interact with page when it is shown
   @demo
 */
 Polymer({
@@ -312,13 +321,25 @@ Polymer({
     }
   },
 
+  /**
+   * Fired when page has been inserted into dom, and is ready to transition.
+   * The event is needed when you need to interact with a page element before it is shown.
+   * The event fires after page is inserted into DOM, and before entry animation starts.
+   *
+   * @event lazy-pages-transition-ready
+   * @param {Object} detail
+   * @param {Node} detail.page -- page that is shown
+   * @param {String} detail.selected -- page's index
+   */
+
+
   _selectedChanged: function(selected, old) {
     // Select a new page when selected changes
     if (selected != null) {
       // console.log('selected', selected);
       var newPage = this._findPageBySelected(selected);
       if (newPage) {
-        this._selectPage(newPage);
+        this._selectPage(newPage, selected);
       }
       else {
         // selection is bad, start the recovery
@@ -462,7 +483,7 @@ Polymer({
     return animation;
   },
 
-  _selectPage: function(page) {
+  _selectPage: function(page, selected) {
     if (page === this.selectedItem)
       return;
 
@@ -471,7 +492,7 @@ Polymer({
       this._lazyTransition.stop();
     }
     this._lazyTransition = new LazyTransition(this);
-    this._lazyTransition.start(page, this.selectedItem);
+    this._lazyTransition.start(page, this.selectedItem, selected);
   },
 
   /**

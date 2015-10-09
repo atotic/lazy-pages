@@ -59,6 +59,6 @@ To load element definition lazily, put the link tag inside the template.
 
 To remove element from dom when invisible, use `restamp` dom-if option.
 
-`lazy-pages` has basic attribute compatibility with neon-animated-pages: `selected`, `attrForSelected`, `animateInitialSelection`.
+`lazy-pages` has basic attribute compatibility with neon-animated-pages: `selected`, `attrForSelected`, `animateInitialSelection`, `items`, `selectedItem`.
 
 

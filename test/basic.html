@@ -94,6 +94,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // bad selection was rescued
           });
 
+          test('lazy-pages-transition-ready event', function(done) {
+            pages = fixture('basic');
+            pages.addEventListener('lazy-pages-transition-ready', function(ev) {
+              debugger;
+              assert.equal(ev.detail.page.id, "page0");
+              assert.equal(ev.detail.selected, 0);
+              done();
+            });
+            pages.selected = 0;
+          });
+
         });
 
       });

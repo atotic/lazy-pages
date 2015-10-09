@@ -1,5 +1,6 @@
 0.8.4
 ==============
+- added `lazy-pages-transition-ready` event if you need to interact with page before it is shown
 - debounce rescueSelection to prevent infinite loops
 - timeout transition.startAnimation from dom-change, makes animations better for lazily loaded
 
