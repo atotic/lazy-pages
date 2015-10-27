@@ -62,7 +62,7 @@ I think it can be made to work, but I am not sure if this is the right way to do
 Another idea was to have a map of {unresolved-tag-name -> import link}, traverse templates
 for any unresolved elements, and importHref definitions when elements are shown.
 
-To load element definition lazily, put the link tag inside the template.
+This is how it used to work:
 ```html
  <!-- this example does not work in IE still working on a workaround -->
   <template is="dom-if">
