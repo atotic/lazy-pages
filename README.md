@@ -57,7 +57,7 @@ To remove element from dom when invisible, use `restamp` dom-if option.
 ### Not working
 
 It'd be nice to also load element definitions lazily. My initial hack was
-to allow <link> elements inside link templates. It worked everywhere but IE.
+to allow &lt;link&gt; elements inside dom-if templates. It worked everywhere but IE.
 I think it can be made to work, but I am not sure if this is the right way to do it.
 Another idea was to have a map of {unresolved-tag-name -> import link}, traverse templates
 for any unresolved elements, and importHref definitions when elements are shown.
