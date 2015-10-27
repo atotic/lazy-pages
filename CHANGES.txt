@@ -1,3 +1,6 @@
+0.8.6
+==============
+
 0.8.5
 ==============
 - Removed on-demand element definition loading <link> inside template. It did not work in IE.
