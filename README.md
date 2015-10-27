@@ -27,11 +27,6 @@ loading every page into DOM on startup, use `lazy-pages` to load them on demand:
     <demo-page></demo-page>
   </template>
 
-  <template is="dom-if">
-    <!-- super-complex-page element definition is also loaded lazily -->
-    <link rel="import" href="super-complex-page.html">
-    <super-complex-page></super-complex-page>
-  </template>
 </lazy-pages>
 
 ```
@@ -55,10 +50,25 @@ Put any template you'd like to load lazily inside a `dom-if` template:
 
 You can only have a single top-level tag inside a template (except for link tags). This keeps my code simple.
 
-To load element definition lazily, put the link tag inside the template.
-
 To remove element from dom when invisible, use `restamp` dom-if option.
 
 `lazy-pages` has basic attribute compatibility with neon-animated-pages: `selected`, `attrForSelected`, `animateInitialSelection`, `items`, `selectedItem`.
 
+### Not working
+
+It'd be nice to also load element definitions lazily. My initial hack was
+to allow <link> elements inside link templates. It worked everywhere but IE.
+I think it can be made to work, but I am not sure if this is the right way to do it.
+Another idea was to have a map of {unresolved-tag-name -> import link}, traverse templates
+for any unresolved elements, and importHref definitions when elements are shown.
+
+To load element definition lazily, put the link tag inside the template.
+```html
+ <!-- this example does not work in IE still working on a workaround -->
+  <template is="dom-if">
+    <!-- super-complex-page element definition is also loaded lazily -->
+    <link rel="import" href="super-complex-page.html">
+    <super-complex-page></super-complex-page>
+  </template>
+```
 

@@ -111,10 +111,12 @@ LazyTransition.prototype = {
     if (this.done)
       return;
     this.entryPage.removeEventListener('dom-change', this._boundDomChange);
-    this.entryInstance = this.lazy._getInstanceElement(this.entryPage);
+    this.entryInstance = this.lazy._getInstanceElement(this.entryPage, true);
     if (!this.entryInstance) {
       console.error('template missing an instance', this.entryPage);
     }
+    // IE failed bug fix
+    // this.lazy._loadImports(this.entryPage);
     window.setTimeout(function() {
       // dom-change gets fired before element is inserted into DOM
       // Timeout to let element get inserted before animation
@@ -219,11 +221,6 @@ LazyTransition.prototype = {
       <demo-page></demo-page>
     </template>
 
-    <template is="dom-if">
-      <!-- super-complex-page element definition is also loaded lazily -->
-      <link rel="import" href="super-complex-page.html">
-      <super-complex-page></super-complex-page>
-    </template>
   </lazy-pages>
 
   ```
@@ -499,7 +496,7 @@ Polymer({
    * @param {Node} template -- dom-if template.
    * @return {Node} instance belonging to template
    */
-  _getInstanceElement: function(template) {
+  _getInstanceElement: function(template, warnLinks) {
     if (!template) {
       console.warn('template is null', template);
       return null;
@@ -521,12 +518,46 @@ Polymer({
         } else {
           el = instance._children[i];
         }
+      } else {
+        if (instance._children[i].nodeType === 1 && warnLinks)  {// we are a link
+          console.warn('<link rel="import"> elements inside templates do not work in IE11 and Edge');
+        }
       }
     }
     if (!el) {
       console.warn('template instance without element children', instance);
     }
     return el;
+  },
+
+  /**
+   * IE does not load imports automatically
+   * this hack tries to make it work, and fails
+   *
+   */
+  _loadImports: function(template) {
+    if (template._lazyLoadedImports)
+      return;
+    template._lazyLoadedImports = true;
+
+    var instance = template._instance;
+    for (var i=0; i<instance._children.length; i++) {
+      var el = instance._children[i];
+      if (el.nodeType === 1 && el.nodeName === 'LINK'
+        && el.getAttribute('rel') === 'import') {
+        // load every import link manually
+        Polymer.Base.importHref(el.href,
+          function succcess() {
+            console.log("import success");
+          },
+          function fail() {
+            console.log("import fail");
+          }
+        );
+        instance._children.splice(i, 1); // remove instance from template
+        i = i-1;
+      }
+    }
   },
 
   _notifyPageResize: function() {
