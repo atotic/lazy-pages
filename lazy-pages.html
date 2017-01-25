@@ -73,13 +73,13 @@ LazyTransition.prototype = {
 
     // start entryPage activation
     this.lazy._setSelectedItem(this.entryPage);
-    if (this.isTemplate(this.entryPage)) {
+    if (this.isTemplate(this.entryPage) && !this.entryPage.if) {
       this.entryPage.addEventListener('dom-change', this._boundDomChange);
-      if (this.entryPage.if)
-        console.warn('transitioning to already showing template');
       this.entryPage.if = true; // generate the dom
     }
     else {
+      if (this.isTemplate(this.entryPage))
+        console.warn('transitioning to already showing template');
       this.entryInstance = this.lazy._getInstanceElement(this.entryPage);
       this.startAnimation();
     }
@@ -175,9 +175,9 @@ LazyTransition.prototype = {
       this.lazy.removeEventListener('neon-animation-finish', this._boundAnimationFinish);
       delete this._boundAnimationFinish;
     }
+    if (this.isTemplate(this.exitPage))
+      this.exitPage.if = false;
     if (this.exitInstance) {
-      if (this.isTemplate(this.exitPage))
-        this.exitPage.if = false;
       Polymer.dom(this.exitInstance).classList.remove('neon-animating');
     }
     if (this.lazy._lazyTransition === this)
